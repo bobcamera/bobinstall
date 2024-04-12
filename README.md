@@ -20,7 +20,7 @@ sudo apt-get install git curl
 ```
 git clone --recursive https://github.com/bobcamera/bobinstall.git
 ```
-### 3. Change directory to install
+### 3. Change directory to bobinstall
 ```
 cd bobinstall
 ```
@@ -33,7 +33,7 @@ cd bobinstall
 ```
 sudo shutdown -r now
 ```
-### 6. Navigate back to the install directory once rebooted
+### 6. Navigate back to the bobinstall directory once rebooted
 ```
 cd ~/bobinstall
 ```
