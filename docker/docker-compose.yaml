@@ -1,0 +1,68 @@
+version: '3'
+services:
+  web:
+    image: bobcamera/bob-web-prod:1.2.15
+    #user: ${MY_UID}:${MY_GID}
+    ports:
+      - "8080:80"
+  # If you want to view demo recordings, comment out the volume section below.      
+    volumes: 
+      - ${PWD}/assets/recordings:/var/www/html/videos
+    depends_on:
+      - bob
+  bob:
+    image: bobcamera/bob-ros2-prod:1.2.15
+    #user: ${MY_UID}:${MY_GID}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9090:9090"
+    environment:  # add in .env
+      - BOB_SOURCE=${BOB_SOURCE}
+      - BOB_OPERATION_MODE='standard'
+      - BOB_RTSP_URL=${BOB_RTSP_URL}
+      - BOB_CAMERA_ID=${BOB_CAMERA_ID}
+      - BOB_ENABLE_VISUALISER=${BOB_ENABLE_VISUALISER}
+      - BOB_ENABLE_RECORDING=${BOB_ENABLE_RECORDING}
+      - BOB_BGS_ALGORITHM=${BOB_BGS_ALGORITHM}
+      - BOB_TRACKING_SENSITIVITY=${BOB_TRACKING_SENSITIVITY}
+      - BOB_TRACKING_SENSITIVITY_AUTOTUNE=${BOB_TRACKING_SENSITIVITY_AUTOTUNE:-True}
+      - BOB_VIDEOS=${BOB_VIDEOS}
+      - BOB_SIMULATION_NUM_OBJECTS=${BOB_SIMULATION_NUM_OBJECTS}
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/workspaces/bobcamera/src/ros2/config/fastdds.xml
+    volumes: 
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro    
+      - ${PWD}/assets/:/workspaces/bobcamera/src/ros2/assets/
+  rstudio:
+    image: dceoy/rstudio-server:latest
+    #user: ${MY_UID}:${MY_GID}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8787:8787"
+    volumes: 
+      - ${PWD}/assets/recordings:/home/rstudio/recordings
+    working_dir: "/home/rstudio dceoy/rstudio-server"
+    depends_on:
+      - bob
+      
+  # If you want to use a usb camera uncomment the devices comment below
+  #  devices:
+  #    - /dev/video0:/dev/video0 
+  # cron:
+  #   image: ghcr.io/bobcamera/bob-crontab
+  #   #privileged: true
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   build:
+  #     context: .
+  #     target: bob-crontab
+  #   #user: "${UID}:${GID}"
+  #   volumes: 
+  #     - ${PWD}/assets/:/bob-research/assets/
+
+volumes:
+  assets:
+    driver: local
