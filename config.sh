@@ -25,6 +25,8 @@ show_menu_advanced() {
     echo "6. Tracking Sensitivity"
     echo "7. Testing Videos"
     echo "8. Number of Simulation Objects"
+    echo "9. Tracking sensitivity auto tune"
+    echo "10. Star Mask"
     echo "s. Show results"
     echo "q. Quit"
     echo "b. Basic mode"
@@ -178,6 +180,8 @@ while true; do
             6) set_config_options "BOB_TRACKING_SENSITIVITY" "Tracking sensitivity options:" "true"  low medium high low_c medium_c high_c;read -rp "Press Enter to continue...";;
             7) set_testing_videos ;read -rp "Press Enter to continue...";;
             8) set_number_of_simulated_objects ;read -rp "Press Enter to continue...";;
+            9) set_config_options "BOB_TRACKING_SENSITIVITY_AUTOTUNE" "Tracking sensitivity auto tune:" "true" True False;read -rp "Press Enter to continue...";;
+            10) set_config_options "BOB_ENABLE_STAR_MASK" "Enable Star Mask:" "true" True False;read -rp "Press Enter to continue...";;
             s) clear; cat ".env";echo -e "\n\n"; read -rp "Press Enter to continue...";;
             q) clear; exit ;;
             b) clear; advanced_mode="false";;   

@@ -1,7 +1,7 @@
 version: '3'
 services:
   bob:
-    image: bobcamera/bob-ros2-prod:1.2.15
+    image: bobcamera/bob-ros2-prod:1.2.16
     #user: ${MY_UID}:${MY_GID}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -17,8 +17,10 @@ services:
       - BOB_BGS_ALGORITHM=${BOB_BGS_ALGORITHM}
       - BOB_TRACKING_SENSITIVITY=${BOB_TRACKING_SENSITIVITY}
       - BOB_TRACKING_SENSITIVITY_AUTOTUNE=${BOB_TRACKING_SENSITIVITY_AUTOTUNE:-True}
+      - BOB_ENABLE_STAR_MASK=${BOB_ENABLE_STAR_MASK:-True}
       - BOB_VIDEOS=${BOB_VIDEOS}
       - BOB_SIMULATION_NUM_OBJECTS=${BOB_SIMULATION_NUM_OBJECTS}
+      - BOB_LOGLEVEL=${BOB_LOGLEVEL:-"INFO"}
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
       - FASTRTPS_DEFAULT_PROFILES_FILE=/workspaces/bobcamera/src/ros2/config/fastdds.xml
     volumes: 
