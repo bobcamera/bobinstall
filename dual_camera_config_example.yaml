@@ -1,0 +1,414 @@
+#########################################################################
+# Variables to use in nodes
+#########################################################################
+variables:
+  resize_height: 1024         # Height to resize the image for display, 0 to disable resize
+  logging_type: screen        # Type of logging for the nodes, screen | log | both
+  extra_saving_seconds: 2     # Extra seconds to save the recording after the event is finished
+  image_compression_quality: 50 # Image compression quality for the compressed image, 0 to 100 (higher=better compression, slower)
+  use_cuda: false             # Leave it false as it is not working
+  profiling: false            # true to enable profiling display, false otherwise
+  use_recording: true         # true to enable recording, false otherwise
+  display_enabled: false      # (suggested to leave it false) true to enable opencv display, false otherwise
+  camera1_enabled: true       # true to enable camera1, false otherwise
+  camera2_enabled: false      # true to enable camera2, false otherwise
+
+#########################################################################
+# Basic configuration for nodes
+#   This is the basic configuration, where most of the users need to worry
+#########################################################################
+basic_config:
+  camera1_node:
+    copy: base_camera_node            # Copy the base camera node configuration
+    recording_prefix: 'directional4k' # Prefix name for the recording files
+    source_type: 'RTSP_STREAM'        # USB_CAMERA | VIDEO_FILE | RTSP_STREAM
+    rtsp_uri: 'rtsp://bob:Bobuser$01@192.168.50.10:554/Streaming/Channels/101' # RTSP URI for the camera
+    camera_id: 0                      # Id of the camera in the /dev directory if using USB_CAMERA
+    usb_camera_resolution: [640, 480] # Resolution for USB Camera [WIDTH, HEIGHT]
+    videos:                           # List of videos to display in sequence if source_type is VIDEO_FILE
+      - '/workspaces/bobcamera/media/fisheye_videos/mike-drone.mp4'
+      - '/workspaces/bobcamera/media/fisheye_videos/mikeg-30min.mp4'
+    speed_test: false                 # true to run the speed test, false otherwise
+    test_frames: 500                  # Number of frames to test the speed
+    speed_test_fps: 90                # FPS to test the speed
+
+  camera2_node:
+    copy: base_camera_node            # Copy the base camera node configuration
+    recording_prefix: 'allsky'        # Prefix name for the recording files
+    source_type: 'RTSP_STREAM'        # USB_CAMERA | VIDEO_FILE | RTSP_STREAM
+    rtsp_uri: 'rtsp://bob:Bobuser$01@192.168.50.11:554/Streaming/Channels/101' # RTSP URI for the camera
+    camera_id: 0                      # Id of the camera in the /dev directory if using USB_CAMERA
+    usb_camera_resolution: [640, 480] # Resolution for USB Camera [WIDTH, HEIGHT]
+    videos:                           # List of videos to display in sequence if source_type is VIDEO_FILE
+      - '/workspaces/bobcamera/media/fisheye_videos/mike-drone.mp4'
+      - '/workspaces/bobcamera/media/fisheye_videos/mikeg-30min.mp4'
+    speed_test: false                 # true to run the speed test, false otherwise
+    test_frames: 300                  # Number of frames to test the speed
+    speed_test_fps: 85                # FPS to test the speed
+    
+  multi_frame_viewer_node:
+    topics: 
+      - '/bob/camera1/annotated/resized/compressed'
+      - '/bob/camera2/annotated/resized/compressed'
+      - '/bob/camera1/original/resized/compressed'
+      - '/bob/camera2/original/resized/compressed'
+      - '/bob/camera1/foreground_mask/resized/compressed'
+      - '/bob/camera2/foreground_mask/resized/compressed'
+
+
+#########################################################################
+# Advanced configuration for nodes
+#   Advanced configuration to have fine control over the nodes behavior
+# !!! CHANGING BELOW CAN BREAK BOB, PLAY WITH CAUTION !!!
+#########################################################################
+advanced_config:
+  camera1_node:
+    privacy_mask_file: 'assets/masks/camera1-privacy-mask.jpg'
+    privacy_mask_override_service_topic: 'bob/mask/privacy/override/camera1'
+    image_publish_topic: 'bob/camera1/original'
+    image_info_publish_topic: 'bob/camera1/image_info'
+    camera_info_publish_topic: 'bob/camera1/camera_info'
+    camera_settings_client_topic: 'bob/camera1/settings'
+    bgs_publish_topic: 'bob/camera1/foreground_mask'
+    bgs_detection_topic: 'bob/camera1/boundingboxes'
+    bgs_detection_state_topic: 'bob/camera1/detection/detector_state'
+    bgs_mask_file: 'assets/masks/camera1-detection-mask.jpg'
+    bgs_mask_override_service_topic: 'bob/mask/detection/override/camera1'
+    recording_event_publisher_topic: 'bob/camera1/recording/event'
+    tracker_publisher_topic: 'bob/camera1/tracker/tracking'
+    tracker_state_publisher_topic: 'bob/camera1/tracker/tracking_state'
+    recording_request_service_topic: 'bob/recording/update/camera1'
+    recording_state_publisher_topic: 'bob/camera1/recording/state'
+    annotated_frame_publisher_topic: 'bob/camera1/annotated'
+    sample_frame_publisher_topic: 'bob/camera1/original/sample'
+
+  camera2_node:
+    privacy_mask_file: 'assets/masks/camera2-privacy-mask.jpg'
+    privacy_mask_override_service_topic: 'bob/mask/privacy/override/camera2'
+    image_publish_topic: 'bob/camera2/original'
+    image_info_publish_topic: 'bob/camera2/image_info'
+    camera_info_publish_topic: 'bob/camera2/camera_info'
+    camera_settings_client_topic: 'bob/camera2/settings'
+    bgs_publish_topic: 'bob/camera2/foreground_mask'
+    bgs_detection_topic: 'bob/camera2/boundingboxes'
+    bgs_detection_state_topic: 'bob/camera2/detection/detector_state'
+    bgs_mask_file: 'assets/masks/camera2-detection-mask.jpg'
+    bgs_mask_override_service_topic: 'bob/mask/detection/override/camera2'
+    recording_event_publisher_topic: 'bob/camera2/recording/event'
+    tracker_publisher_topic: 'bob/camera2/tracker/tracking'
+    tracker_state_publisher_topic: 'bob/camera2/tracker/tracking_state'
+    recording_request_service_topic: 'bob/recording/update/camera2'
+    recording_state_publisher_topic: 'bob/camera2/recording/state'
+    annotated_frame_publisher_topic: 'bob/camera2/annotated'
+    sample_frame_publisher_topic: 'bob/camera2/original/sample'
+
+  base_camera_node:
+    use_cuda: $use_cuda
+    profiling: $profiling
+    resize_height: $resize_height # 0 to disable resize publish
+    simulator: False              # True for including simulated objects, False otherwise
+    simulator_num_objects: 15     # Number of simulated objects if the simulator parameter is True
+    bgs_sensitivity: 'medium_c'   # Initial sensitivity configuration based on the 'bgs_json_params' in the advanced config section
+    bgs_type: 'vibe'              # The background subtractor to use: 'vibe' | 'wmv'
+    onvif_uri: ''
+    mask_timer_seconds: 5
+    recording_enabled: $use_recording
+    recording_codec: 'avc1'
+    recording_seconds_save: $extra_saving_seconds
+    recordings_directory: 'assets/recordings/'
+    compression_quality: $image_compression_quality
+    enable_tracking_status_message: false
+    visualiser_settings: '{"bbox_line_thickness": "2", "font_scale_width": "0", "font_scale_width": "0", "font_scale": "1.0", "zoom_factor": "2.0", "enable_cropped_tracks": "true", "font_colour": "{50,170,50}", "prediction_colour": "{255,0,50}"}'
+    sample_enabled: true
+    sample_interval: 30
+    sample_height: 512
+    bgs_json_params: '[
+                    { "name": "low",
+                      "sensitivity": {
+                        "vibe": {"threshold": 65, "bgSamples": 32, "requiredBGSamples": 1, "learningRate": 8}, 
+                        "wmv": {"enableWeight": true, "enableThreshold": true, "threshold": 50.0, "weight1": 0.5, "weight2": 0.3, "weight3": 0.2}, 
+                        "blob": {"sizeThreshold": 10, "areaThreshold": 100, "minDistance": 100, "maxBlobs": 25}, 
+                        "median_filter": false}},
+                    { "name": "medium",
+                      "sensitivity": {
+                        "vibe": {"threshold": 45, "bgSamples": 32, "requiredBGSamples": 1, "learningRate": 4}, 
+                        "wmv": {"enableWeight": true, "enableThreshold": true, "threshold": 30.0, "weight1": 0.5, "weight2": 0.3, "weight3": 0.2}, 
+                        "blob": {"sizeThreshold": 6, "areaThreshold": 36, "minDistance": 36, "maxBlobs": 25}, 
+                        "median_filter": false}},
+                    { "name": "high",
+                      "sensitivity": {
+                        "vibe": {"threshold": 30, "bgSamples": 16, "requiredBGSamples": 1, "learningRate": 4}, 
+                        "wmv": {"enableWeight": true, "enableThreshold": true, "threshold": 15.0, "weight1": 0.5, "weight2": 0.3, "weight3": 0.2}, 
+                        "blob": {"sizeThreshold": 4, "areaThreshold": 16, "minDistance": 16, "maxBlobs": 25}, 
+                        "median_filter": false}},    
+                    { "name": "low_c",
+                      "sensitivity": {
+                        "vibe": {"threshold": 65, "bgSamples": 32, "requiredBGSamples": 1, "learningRate": 8}, 
+                        "wmv": {"enableWeight": true, "enableThreshold": true, "threshold": 50.0, "weight1": 0.5, "weight2": 0.3, "weight3": 0.2}, 
+                        "blob": {"sizeThreshold": 10, "areaThreshold": 100, "minDistance": 100, "maxBlobs": 25}, 
+                        "median_filter": true}},
+                    { "name": "medium_c",
+                      "sensitivity": {
+                        "vibe": {"threshold": 45, "bgSamples": 16, "requiredBGSamples": 1, "learningRate": 4}, 
+                        "wmv": {"enableWeight": true, "enableThreshold": true, "threshold": 25.0, "weight1": 0.5, "weight2": 0.3, "weight3": 0.2}, 
+                        "blob": {"sizeThreshold": 6, "areaThreshold": 36, "minDistance": 36, "maxBlobs": 25}, 
+                        "median_filter": true}},
+                    { "name": "high_c",
+                      "sensitivity": {
+                        "vibe": {"threshold": 25, "bgSamples": 16, "requiredBGSamples": 1, "learningRate": 4}, 
+                        "wmv": {"enableWeight": true, "enableThreshold": true, "threshold": 15.0, "weight1": 0.5, "weight2": 0.3, "weight3": 0.2}, 
+                        "blob": {"sizeThreshold": 4, "areaThreshold": 16, "minDistance": 16, "maxBlobs": 25}, 
+                        "median_filter": true}}
+                  ]'
+
+  camera1_original_compressor_node:
+    compressed_frame_subscriber_topic: 'bob/camera1/original/resized'
+    compression_quality: $image_compression_quality
+
+  camera2_original_compressor_node:
+    compressed_frame_subscriber_topic: 'bob/camera2/original/resized'
+    compression_quality: $image_compression_quality
+
+  camera1_foreground_mask_compressor_node:
+    compressed_frame_subscriber_topic: 'bob/camera1/foreground_mask/resized'
+    compression_quality: $image_compression_quality
+
+  camera2_foreground_mask_compressor_node:
+    compressed_frame_subscriber_topic: 'bob/camera2/foreground_mask/resized'
+    compression_quality: $image_compression_quality
+
+  camera1_image_estimator_node:
+    camera_subscription_topic: 'bob/camera1/original/sample'
+    cloud_estimation_publish_topic: 'bob/camera1/observer/cloud_estimation'
+    day_night_publish_topic: 'bob/camera1/observer/day_night_classifier'
+    observer_timer_interval: 60
+    observer_day_night_brightness_threshold: 95
+    mask_timer_seconds: 5
+    mask_file: 'assets/masks/camera1-detection-mask.jpg'
+
+  camera2_image_estimator_node:
+    camera_subscription_topic: 'bob/camera2/original/sample'
+    cloud_estimation_publish_topic: 'bob/camera2/observer/cloud_estimation'
+    day_night_publish_topic: 'bob/camera2/observer/day_night_classifier'
+    observer_timer_interval: 60
+    observer_day_night_brightness_threshold: 95
+    mask_timer_seconds: 5
+    mask_file: 'assets/masks/camera2-detection-mask.jpg'
+
+  camera1_monitoring_status_aggregator_node:
+    observer_tracker_aggregation_interval: 1
+    sub_detector_state_topic: 'bob/camera1/detection/detector_state'
+    sub_tracking_state_topic: 'bob/camera1/tracker/tracking_state'
+    sub_recording_state_topic: 'bob/camera1/recording/state'
+    sub_environment_day_night_topic: 'bob/camera1/observer/day_night_classifier'
+    sub_cloud_estimation_topic: 'bob/camera1/observer/cloud_estimation'
+    pub_aggregation_state_topic: 'bob/camera1/monitoring/status'
+
+  camera2_monitoring_status_aggregator_node:
+    observer_tracker_aggregation_interval: 1
+    sub_detector_state_topic: 'bob/camera2/detection/detector_state'
+    sub_tracking_state_topic: 'bob/camera2/tracker/tracking_state'
+    sub_recording_state_topic: 'bob/camera2/recording/state'
+    sub_environment_day_night_topic: 'bob/camera2/observer/day_night_classifier'
+    sub_cloud_estimation_topic: 'bob/camera2/observer/cloud_estimation'
+    pub_aggregation_state_topic: 'bob/camera2/monitoring/status'
+
+  camera1_track_sensitivity_monitor_node:
+    monitoring_subscription_topic: 'bob/camera1/monitoring/status'
+    bgs_node: 'camera1_node'
+    check_interval: 10
+    sensitivity_increase_count_threshold: 5
+    sensitivity: 'medium_c'
+    star_mask_enabled: True    
+
+  camera2_track_sensitivity_monitor_node:
+    monitoring_subscription_topic: 'bob/camera2/monitoring/status'
+    bgs_node: 'camera2_node'
+    check_interval: 10
+    sensitivity_increase_count_threshold: 5
+    sensitivity: 'medium_c'
+    star_mask_enabled: True    
+
+  camera1_recorder_monitoring_node:
+    enabled: $use_recording
+    check_interval: 5
+
+  camera2_recorder_monitoring_node:
+    enabled: $use_recording
+    check_interval: 5
+
+  onvif_service_node:
+    onvif_wsdl_path: 'assets/wsdl'
+
+  info_webapi_node:
+    version_file: '/workspaces/bobcamera/src/ros2/version.txt'
+
+  mask_webapi_node:
+    masks_folder: 'assets/masks'
+
+#########################################################################
+# Launch nodes configuration
+#   Here is what containers and nodes will be launched by this
+#   configuration file, you can add, change and delete nodes/containers
+#   as you want, the 'name' of the node should also be the same in the
+#   configuration above.(basic/advanced)
+#
+#   There are standalone parameters:
+#     namespace: the namespace to run BOB
+#     rosbridge: True to enable rosbridge frontend connection, False otherwise
+#
+#   The Node Containers are executables that will run nodes in the same
+#   process, they have the advantage of using intra process communication
+#   so no network overhead between nodes, they have the following
+#   configuration:
+#     name: the name you want to give this container
+#     executable: the type of the executable created, we have two:
+#                 - 'component_container' is a single threaded container,
+#                     should be used when we have simple nodes or nodes
+#                     need to be single-threaded (like visual nodes)    
+#                 - 'component_container_mt' is a multi-threaded 
+#                     container, used for performance and better thread
+#                     distribution
+#     output: where the output of the messages will go, three available:
+#             - 'screen' log only to screen
+#             - 'log' log to file
+#             - 'both' log to screen and file
+#
+#   Nodes inside the containers should be libraries in c++, they have the
+#   following configuration:
+#     package: the package where the node is located (usually directory)
+#     plugin: the c++ name of the class with the namespace
+#     name: the name you want this node to have
+#     remappings: the topics remappings
+#
+#   Standalone nodes are usually Python nodes that cannot go inside the
+#   container or C++ nodes that were compiled as executables, they have 
+#   the following configuration:
+#     package: the package where the node is located (usually directory)
+#     executable: the name usually in entry_points of the setup.py
+#     name: the name you want this node to have
+#     remappings: the topics remappings
+#     output: where the output of the messages will go, three available:
+#             - 'screen' log only to screen
+#             - 'log' log to file
+#             - 'both' log to screen and file
+#     
+#########################################################################
+launch:
+  namespace: ''
+  rosbridge: True
+
+  node_containers:
+    - name: Kernel_Camera1
+      enabled: $camera1_enabled
+      executable: component_container_mt
+      output: $logging_type
+      nodes:
+        - package: bob_camera
+          plugin: CameraBGS
+          name: camera1_node
+          remappings: []
+        - package: bob_image_processing
+          plugin: FrameCompressor
+          name: camera1_original_compressor_node
+          remappings: []
+        - package: bob_image_processing
+          plugin: FrameCompressor
+          name: camera1_foreground_mask_compressor_node
+          remappings: []
+
+    - name: Kernel_Camera2
+      enabled: $camera2_enabled
+      executable: component_container_mt
+      output: $logging_type
+      nodes:
+        - package: bob_camera
+          plugin: CameraBGS
+          name: camera2_node
+          remappings: []
+        - package: bob_image_processing
+          plugin: FrameCompressor
+          name: camera2_original_compressor_node
+          remappings: []
+        - package: bob_image_processing
+          plugin: FrameCompressor
+          name: camera2_foreground_mask_compressor_node
+          remappings: []
+
+    - name: Display
+      enabled: $display_enabled
+      executable: component_container # Has to be single-threaded because of OpenCV display
+      output: $logging_type
+      nodes:
+        - package: bob_visualizers
+          plugin: FrameViewer
+          name: multi_frame_viewer_node
+          remappings: []
+
+    - name: Monitor_Camera1
+      enabled: $camera1_enabled
+      executable: component_container_mt
+      output: $logging_type
+      nodes:
+        - package: bob_image_processing
+          plugin: TrackSensitivityMonitor
+          name: camera1_track_sensitivity_monitor_node
+          remappings: []
+        - package: bob_recorder
+          plugin: RecordingMonitor
+          name: camera1_recorder_monitoring_node
+          remappings: []
+        - package: bob_observer
+          plugin: ImageEstimator
+          name: camera1_image_estimator_node
+          remappings: []
+        
+    - name: Monitor_Camera2
+      enabled: $camera2_enabled
+      executable: component_container_mt
+      output: $logging_type
+      nodes:
+        - package: bob_image_processing
+          plugin: TrackSensitivityMonitor
+          name: camera2_track_sensitivity_monitor_node
+          remappings: []
+        - package: bob_recorder
+          plugin: RecordingMonitor
+          name: camera2_recorder_monitoring_node
+          remappings: []
+        - package: bob_observer
+          plugin: ImageEstimator
+          name: camera2_image_estimator_node
+          remappings: []
+        
+  standalone_nodes:
+    - package: bob_monitor
+      executable: monitoring_status_aggregator
+      name: camera1_monitoring_status_aggregator_node
+      enabled: $camera1_enabled
+      remappings: []
+      output: $logging_type
+    - package: bob_monitor
+      executable: monitoring_status_aggregator
+      name: camera2_monitoring_status_aggregator_node
+      enabled: $camera2_enabled
+      remappings: []
+      output: $logging_type
+    - package: bob_monitor
+      executable: onvif_service
+      name: onvif_service_node
+      enabled: true
+      remappings: []
+      output: $logging_type
+    - package: bob_webapi
+      executable: info_webapi
+      name: info_webapi_node
+      enabled: true
+      remappings: []
+      output: $logging_type
+    - package: bob_webapi
+      executable: mask_webapi
+      name: mask_webapi_node
+      enabled: true
+      remappings: []
+      output: $logging_type

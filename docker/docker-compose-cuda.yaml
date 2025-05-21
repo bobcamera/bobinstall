@@ -4,7 +4,6 @@ services:
     image: bobcamera/bob-web-prod:1.7.1
     ports:
       - "8080:80"
-  # If you want to view demo recordings, comment out the volume section below.      
     volumes: 
       - ${PWD}/assets/recordings:/var/www/html/videos
     depends_on:
@@ -12,13 +11,17 @@ services:
 
   bob:
     image: bobcamera/bob-ros2-prod:1.7.1
-    privileged: true
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    runtime: nvidia
+    gpus: all
+    privileged: true
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - BOB_LOGLEVEL=${BOB_LOGLEVEL:-INFO}
     ports:
       - "9090:9090"
-    environment:  # add in .env
-      - BOB_LOGLEVEL=${BOB_LOGLEVEL:-INFO}
     volumes: 
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro    

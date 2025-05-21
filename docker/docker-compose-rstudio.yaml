@@ -1,4 +1,4 @@
-# This docker-compose file is used to run the bobcamera web and ros2 nodes in a containerized environment.
+version: '3.8'
 services:
   web:
     image: bobcamera/bob-web-prod:1.7.1
@@ -12,7 +12,6 @@ services:
 
   bob:
     image: bobcamera/bob-ros2-prod:1.7.1
-    privileged: true
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
@@ -27,6 +26,18 @@ services:
   # If you want to use a usb camera uncomment the devices comment below
   #  devices:
   #    - /dev/video0:/dev/video0 
+
+  rstudio:
+    image: dceoy/rstudio-server:latest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8787:8787"
+    volumes: 
+      - ${PWD}/assets/recordings:/home/rstudio/recordings
+    working_dir: "/home/rstudio dceoy/rstudio-server"
+    depends_on:
+      - bob
 
 volumes:
   assets:
