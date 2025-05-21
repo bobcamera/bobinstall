@@ -36,15 +36,15 @@ else
     printf '\nDocker Compose installed successfully\n\n'
 fi
 
-# Check if the .env file exists
-if [ -f ".env" ]; then
-    echo -e "An .env-File exists already! Type y(es), if you want to retain the existing .env-File," 
+# Check if the .yaml file exists
+if [ -f "my_config.yaml" ]; then
+    echo -e "A my_config.yaml file exists already! Type y(es), if you want to retain the existing .yaml file," 
     while true; do
-        read -p "type n(o) if you want to have it overwritten by the default .env-File. y/n?" retain_env
+        read -p "type n(o) if you want to have it overwritten by the default .yaml. y/n?" retain_env
         response_lower=$(echo "$retain_env" | tr '[:upper:]' '[:lower:]')
         if [ "$response_lower" = "no" ] || [ "$response_lower" = "n" ]; then
             echo "File will be overwritten."
-            cp .env.example .env
+            cp dual_camera_config_example.yaml my_config.yaml
             break
         elif [ "$response_lower" = "yes" ] || [ "$response_lower" = "y" ]; then
             echo "File will be kept."
@@ -56,10 +56,8 @@ if [ -f ".env" ]; then
         fi
     done
 else
-    # Copy the .env file
-    cp .env.example .env
+    # Copy the .yaml file
+    cp dual_camera_config_example.yaml my_config.yaml
 fi
 sleep 2
 
-# Run the config script
-./config.sh

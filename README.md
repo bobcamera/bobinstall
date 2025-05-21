@@ -9,6 +9,7 @@ The application uses Docker and Docker Compose to run, at present we are still i
 
 - Ubuntu 23.10 has been tested
 - Ubuntu 22.04 has been tested
+- Ubuntu 24.04 has been tested
 
 ### 1. Install dependencies
 - Git
@@ -37,33 +38,27 @@ sudo shutdown -r now
 ```
 cd ~/bobinstall
 ```
-### 7. To start up BOB
-```
-./run.sh
-```
-### 8. Use your system browser and navigate to [http://localhost:8080](http://localhost:8080)
+### 7. To setup BOB
+* #### Open my_config.yaml in your preference editor (vscode, vim...)
+* #### Edit the settings as explained in the comments
 
-### 9. To shut BOB down, type CTRL + C in the terminal
+### 8. To start up BOB
+```
+./run.sh my_config.yaml
+```
+### 9. Use your system browser and navigate to [http://localhost:8080](http://localhost:8080)
+
+### 10. To shut BOB down, type CTRL + C in the terminal
 
 --- 
 ## Appendix: 
 
-### I. To change the configuration after initial setup please execute: 
-```
-./config.sh 
-```
-
-### II. To update to the lastest version of bob please execute: 
+### I. To update to the lastest version of bob please execute: 
 ```
 git pull origin main
 ```
 
-### III. Reset the config file to factory conditions: 
+### II. Reset the config file to factory conditions: 
 ```
-cp .env.example .env
+cp dual_camera_config_example.yaml my_config.yaml
 ```
-or
-```
-./setup.sh
-```
-and select "No" in the prompt. 
